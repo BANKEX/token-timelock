@@ -1,11 +1,4 @@
-const ethUtil = require("ethereumjs-util");
 const env = process.env;
-
-// don't load .env file in prod
-if (env.NODE_ENV !== 'production') {
-    require('dotenv').load();
-}
-
 
 
 module.exports = {
@@ -20,7 +13,7 @@ module.exports = {
         },
         ganache: {
             host: '127.0.0.1',
-            port:8545,
+            port:7545,
             network_id: 5777,
             gas: 6721975
         },
@@ -30,14 +23,6 @@ module.exports = {
             network_id: 42,
             gas: 4700000,
             gasPrice: 20000000000
-        },
-        rinkeby: {
-            provider: function() {
-                let WalletProvider = require("truffle-wallet-provider");
-                let wallet = require('ethereumjs-wallet').fromPrivateKey(Buffer.from(env.ETH_KEY, 'hex'));
-                return new WalletProvider(wallet, "https://rinkeby.infura.io/" + env.INFURA_TOKEN)
-            },
-            network_id: 4
         },
         rinkeby_localhost: {
             host: "localhost", // Connect to geth on the specified
@@ -64,7 +49,7 @@ module.exports = {
     },
     solc: {
         optimizer: {
-            enabled: true,
+            enabled: false,
             runs: 200
         }
     },
