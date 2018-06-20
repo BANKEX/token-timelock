@@ -4,8 +4,9 @@ import "../abstract/IERC20.sol";
 import "../libraries/SortedLinkedList.sol";
 import "../libraries/SafeMath.sol";
 import "./Admins.sol";
+import "../abstract/TimeMachine/TimeMachineP.sol";
 
-contract TokensTransfer is Admins {
+contract TokensTransfer is Admins, TimeMachineP {
   using SortedLinkedList for SortedLinkedList.SLL;
   using SafeMath for uint;
 
@@ -40,7 +41,7 @@ contract TokensTransfer is Admins {
   }
 
   function getBalance(address _owner, address _token) external view returns(uint) {
-    return getBalanceAt(_owner, _token, now);
+    return getBalanceAt(_owner, _token, getTimestamp_());
   }
 
   function release(address _token, uint _amount) external {
@@ -58,7 +59,7 @@ contract TokensTransfer is Admins {
     uint lastNodeKey = node.next;
     uint balance = 0;
 
-    while(node.next != 0 && lastNodeKey <= now && balance <= _amount) {
+    while(node.next != 0 && lastNodeKey <= getTimestamp_() && balance <= _amount) {
       node = bank[_recipient][_token].stepForward(node);
       balance = balance.add(node.value);
 
