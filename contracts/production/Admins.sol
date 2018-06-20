@@ -1,6 +1,8 @@
 pragma solidity ^0.4.24;
 
-contract Admins {
+import "../abstract/IAdmins.sol";
+
+contract Admins is IAdmins {
 
   mapping(address => bool) admins;
 

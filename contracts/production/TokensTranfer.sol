@@ -5,8 +5,9 @@ import "../libraries/SortedLinkedList.sol";
 import "../libraries/SafeMath.sol";
 import "./Admins.sol";
 import "../abstract/TimeMachine/TimeMachineP.sol";
+import "../abstract/ITokensTransfer.sol";
 
-contract TokensTransfer is Admins, TimeMachineP {
+contract TokensTransfer is ITokensTransfer, Admins, TimeMachineP {
   using SortedLinkedList for SortedLinkedList.SLL;
   using SafeMath for uint;
 
