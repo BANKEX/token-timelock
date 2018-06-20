@@ -4,7 +4,7 @@ library SortedLinkedList {
 
     struct Node {
         uint next;
-        uint prev;
+//        uint prev;
         uint value;
     }
 
@@ -25,7 +25,7 @@ library SortedLinkedList {
         if(_key == self.HEAD) { return true; }
 
         Node memory node = self.sll[_key];
-        return !(node.next == 0 && node.prev == 0);
+        return (node.next != 0);
     }
 
     // get next node
@@ -34,11 +34,6 @@ library SortedLinkedList {
         return getNode(self, _currentNode.next);
     }
 
-    // get previous node
-    // convenient way to iterate over list
-    function stepBack(SLL storage self, Node _currentNode) internal view returns(Node) {
-        return getNode(self, _currentNode.prev);
-    }
 
     function insert(SLL storage self, uint _prevNodeKey, uint _key, uint _value) internal returns (uint) {
         require(isNodeExist(self, _prevNodeKey));
@@ -53,11 +48,11 @@ library SortedLinkedList {
         require(_prevNodeKey > _key && nextKey < _key);
 
         self.sll[_prevNodeKey].next = _key;
-        self.sll[nextKey].prev = _key;
+//        self.sll[nextKey].prev = _key;
 
         self.sll[_key] = Node({
             next: nextKey,
-            prev: _prevNodeKey,
+//            prev: _prevNodeKey,
             value: _value
         });
 
@@ -70,7 +65,6 @@ library SortedLinkedList {
 
         self.sll[_key] = Node({
             next: 0,
-            prev: self.HEAD,
             value: _value
         });
 
@@ -95,13 +89,9 @@ library SortedLinkedList {
 
         Node memory node = getNode(self, _from);
         uint nextNodeKey = node.next;
-//        uint currentNodeKey = nextNodeKey;
 
         while(nextNodeKey != _to) {
             node = stepForward(self, node);
-//            currentNodeKey = nextNodeKey;
-//            nextNodeKey = node.next;
-//            delete self.sll[currentNodeKey];
 
             delete self.sll[nextNodeKey];
             nextNodeKey = node.next;
@@ -110,28 +100,10 @@ library SortedLinkedList {
         _sew(self, _from, _to);
     }
 
-    // remove node
-    function remove(SLL storage self, uint _key) internal {
-        require(isNodeExist(self, _key));
-        Node memory node = getNode(self, _key);
-
-        if (self.HEAD == _key) {
-            uint prev = self.sll[_key].prev;
-            self.sll[prev].next = 0;
-            self.HEAD = prev;
-        } else {
-            _sew(self, self.sll[_key].prev, self.sll[_key].next);
-        }
-
-        delete self.sll[_key];
-    }
-
-
 
     // internal method; all data has to be pre validated
     function _sew(SLL storage self, uint _from, uint _to) private {
         self.sll[_from].next = _to;
-        self.sll[_to].prev = _from;
     }
 
 
