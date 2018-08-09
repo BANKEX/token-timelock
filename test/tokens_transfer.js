@@ -42,7 +42,9 @@ contract('TokensTransfer', async(accounts) => {
         const releaseTimestamp = nowInSeconds() + 60;
 
 
-        await tokenTransferInstance.acceptTokens(recipient, token, releaseTimestamp - 100, 0, amount, fromOwner);
+        await tokenTransferInstance.acceptTokens(recipient, token, releaseTimestamp - 300, 0, amount, fromOwner);
+        await tokenTransferInstance.acceptTokens(recipient, token, releaseTimestamp - 200, releaseTimestamp - 300, amount, fromOwner);
+        await tokenTransferInstance.acceptTokens(recipient, token, releaseTimestamp - 100, releaseTimestamp - 200, amount, fromOwner);
         await tokenTransferInstance.acceptTokens(recipient, token, (releaseTimestamp + 100), releaseTimestamp - 100, amount, fromOwner);
         await tokenTransferInstance.acceptTokens(recipient, token, releaseTimestamp + 200, (releaseTimestamp + 100), amount, fromOwner);
 
