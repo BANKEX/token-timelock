@@ -1,11 +1,12 @@
 pragma solidity ^0.4.23;
 
 
+import "./ITimeMachine.sol";
 
 /**
 * @dev TimeMachine implementation to simulate time-dependence smart contract logic
 */
-contract TimeMachineT {
+contract TimeMachineT is ITimeMachine {
 
   /**
   * @dev signed time offset for time emulation

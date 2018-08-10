@@ -4,7 +4,13 @@ import "../../libs/ownership/Ownable.sol";
 import "../TimeMachine/ITimeMachine.sol";
 import "../Cassette/ICassette.sol";
 
+/*
+ Отправляет передачу средств другому пользователю с таймаутом.
+ Пока время не пройдёт, получатель не сможет забрать эти средства.
+ Без знания таймкода получатель не сможет забрать эти средства.
+ Админ может подтвердить любую передачу по таймкоду и адресу получателя.
 
+*/
 
 
 contract Timelock is ICassette, ITimeMachine, Ownable {
@@ -32,7 +38,7 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
     if (_balance == 0 ) {
       emit Lock(_for);
     }
-    balance[_for][_timestamp] = _balance.add(msg.value);
+    balance[_for][_timestamp] = _balance.add(_value);
     return true;
   }
 
