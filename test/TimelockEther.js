@@ -79,40 +79,40 @@ contract('TimelockEther', async(accounts) => {
         await contract.release([time],[eth(1)],fromRecipient)
     })
     it('sending $10 multiple times at the different timecodes', async() => {
-        let array = [];
+        let array = []
+        let values = []
+        let value = eth(0.1)
         for (var i = 1; i <= 10; i++) {
-            array.push(uint(now+minute*i))
+            let timecode = uint(now+minute*i)
+            array.push(timecode)
+            values.push(value)
+            await contract.accept(recipient, timecode, uint(0), { value: value })
         }
-        let values = array.map(_ => 10)
-
-        await array.forEach(async function(timecode) {
-            await contract.accept(recipient, timecode, uint(0), { value: eth(0.1) })
-        });
         await contract.setTimestamp(uint(now+minute*10))
         await contract.release(array,values,fromRecipient)
     })
     it('trying to take some money from incompleted timecodes', async() => {
-        let array = [];
+        let array = []
+        let values = []
+        let value = eth(0.1)
         for (var i = 1; i <= 10; i++) {
-            array.push(uint(now+minute*i))
+            let timecode = uint(now+minute*i)
+            array.push(timecode)
+            values.push(value)
+            await contract.accept(recipient, timecode, uint(0), { value: value })
         }
-        let values = array.map(_ => eth(0.1))
-
-        await array.forEach(async function(timecode) {
-            await contract.accept(recipient, timecode, uint(0), { value: eth(0.1) })
-        });
         await assertRevert(contract.release(array,values,fromRecipient))
     })
     it('trying to take some money from half incompleted and half completed timecodes', async() => {
-        let array = [];
+        let array = []
+        let values = []
+        let value = eth(0.1)
         for (var i = 1; i <= 10; i++) {
-            array.push(uint(now+minute*i))
+            let timecode = uint(now+minute*i)
+            array.push(timecode)
+            values.push(value)
+            await contract.accept(recipient, timecode, uint(0), { value: value })
         }
-        let values = array.map(_ => eth(0.1))
-
-        await array.forEach(async function(timecode) {
-            await contract.accept(recipient, timecode, uint(0), { value: eth(0.1) })
-        });
         await contract.setTimestamp(uint(now+minute*5))
         await assertRevert(contract.release(array,values,fromRecipient))
     })

@@ -3,7 +3,6 @@ const TimelockERC20 = artifacts.require('TimelockERC20');
 const ERC20 = artifacts.require('ERC20');
 const web3 = global.web3;
 const uint = v => web3.toBigNumber(v)
-const num = v => web3.fromBigNumber(v)
 
 async function assertRevert (promise) {
     try {
@@ -33,14 +32,14 @@ contract('TimelockERC20', async(accounts) => {
     let minute = 60;
     let result;
 
-    async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
-        let current = await erc20.balanceOf(owner)
-        assert.equal(current,ownerBalance,`owner.balance(${current}) != ${ownerBalance}`)
-        current = await erc20.balanceOf(recipient)
-        assert.equal(current,recipientBalance,`recipient.balance(${current}) != ${recipientBalance}`)
-        current = await erc20.balanceOf(contract.address)
-        assert.equal(current,contractBalance,`contract.balance(${current}) != ${contractBalance}`)
-    }
+async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
+    let current = await erc20.balanceOf(owner)
+    assert(current.eq(uint(ownerBalance)),`owner.balance(${current}) != ${ownerBalance}`)
+    current = await erc20.balanceOf(recipient)
+    assert(current.eq(uint(recipientBalance)),`recipient.balance(${current}) != ${recipientBalance}`)
+    current = await erc20.balanceOf(contract.address)
+    assert(current.eq(uint(contractBalance)),`contract.balance(${current}) != ${contractBalance}`)
+}
 
     beforeEach(async () => {
         // Creating ERC20 contract with 100 balance
@@ -189,17 +188,16 @@ contract('TimelockERC20', async(accounts) => {
         await checkBalance(0,100,0)
     })
     it('sending $10 multiple times at the different timecodes', async() => {
-        let array = [];
-        for (var i = 1; i <= 10; i++) {
-            array.push(uint(now+minute*i))
-        }
-        let values = array.map(_ => 10)
-
         // Approving contract to take 100 from senders balance
         await erc20.approve(contract.address,100)
-        await array.forEach(async function(timecode) {
+        let array = [];
+        let values = [];
+        for (var i = 1; i <= 10; i++) {
+            let timecode = uint(now+minute*i)
+            array.push(timecode)
+            values.push(10)
             await contract.accept(recipient, timecode, uint(10))
-        });
+        }
 
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
@@ -214,17 +212,17 @@ contract('TimelockERC20', async(accounts) => {
         await checkBalance(0,100,0)
     })
     it('trying to take some money from incompleted timecodes', async() => {
-        let array = [];
-        for (var i = 1; i <= 10; i++) {
-            array.push(uint(now+minute*i))
-        }
-        let values = array.map(_ => 10)
-
         // Approving contract to take 100 from senders balance
         await erc20.approve(contract.address,100)
-        await array.forEach(async function(timecode) {
+
+        let array = []
+        let values = []
+        for (var i = 1; i <= 10; i++) {
+            let timecode = uint(now+minute*i)
+            array.push(timecode)
+            values.push(10)
             await contract.accept(recipient, timecode, uint(10))
-        });
+        }
 
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
@@ -236,17 +234,16 @@ contract('TimelockERC20', async(accounts) => {
         await checkBalance(0,0,100)
     })
     it('trying to take some money from half incompleted and half completed timecodes', async() => {
-        let array = [];
-        for (var i = 1; i <= 10; i++) {
-            array.push(uint(now+minute*i))
-        }
-        let values = array.map(_ => 10)
-
         // Approving contract to take 100 from senders balance
         await erc20.approve(contract.address,100)
-        await array.forEach(async function(timecode) {
+        let array = []
+        let values = []
+        for (var i = 1; i <= 10; i++) {
+            let timecode = uint(now+minute*i)
+            array.push(timecode)
+            values.push(10)
             await contract.accept(recipient, timecode, uint(10))
-        });
+        }
 
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
