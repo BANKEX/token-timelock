@@ -1,5 +1,5 @@
 
-const TimelockEther = artifacts.require('TimelockEther');
+const TimelockEther = artifacts.require('TimelockEtherTest');
 const web3 = global.web3;
 const uint = v => web3.toBigNumber(v)
 const num = v => web3.fromBigNumber(v)

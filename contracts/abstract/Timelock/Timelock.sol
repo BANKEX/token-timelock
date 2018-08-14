@@ -4,20 +4,13 @@ import "../../libs/ownership/Ownable.sol";
 import "../TimeMachine/ITimeMachine.sol";
 import "../Cassette/ICassette.sol";
 
-/*
- Отправляет передачу средств другому пользователю с таймаутом.
- Пока время не пройдёт, получатель не сможет забрать эти средства.
- Без знания таймкода получатель не сможет забрать эти средства.
- Админ может подтвердить любую передачу по таймкоду и адресу получателя.
-
-*/
 
 
 contract Timelock is ICassette, ITimeMachine, Ownable {
   using SafeMath for uint;
 
-  event Lock(address indexed _for);
-  event Withdraw(address indexed _for, uint value);
+  event Lock(address indexed _for, uint value, uint timestamp);
+  event Withdraw(address indexed _for, uint value, uint timestamp);
 
 
 
@@ -35,9 +28,7 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
       require(acceptAbstractToken_(_value));
     } else revert();
     uint _balance = balance[_for][_timestamp];
-    if (_balance == 0 ) {
-      emit Lock(_for);
-    }
+    emit Lock(_for, _value, _timestamp);
     balance[_for][_timestamp] = _balance.add(_value);
     return true;
   }
@@ -58,11 +49,11 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
       _curTimestamp = _timestamp[i];
       require(_curValue >= _subValue);
       require(_curTimestamp <= _now);
-      balance[_for][_timestamp[i]] = _curValue.sub(_subValue);
+      balance[_for][_curTimestamp] = _curValue.sub(_subValue);
       _totalValue = _totalValue.add(_subValue);
+      emit Withdraw(_for, _subValue, _curTimestamp);
     }
     releaseAbstractToken_(_for, _totalValue);
-    emit Withdraw(_for, _totalValue);
     return true;
   }
 

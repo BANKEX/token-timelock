@@ -1,5 +1,5 @@
 
-const TimelockERC20 = artifacts.require('TimelockERC20');
+const TimelockERC20 = artifacts.require('TimelockERC20Test');
 const ERC20 = artifacts.require('ERC20');
 const web3 = global.web3;
 const uint = v => web3.toBigNumber(v)

@@ -6,6 +6,6 @@ import "../abstract/Timelock/Timelock.sol";
 
 
 
-contract TimelockEther is EtherCassette, TimeMachineT, Timelock {
+contract TimelockEtherTest is EtherCassette, TimeMachineT, Timelock {
   
 }
