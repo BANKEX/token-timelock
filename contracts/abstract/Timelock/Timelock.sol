@@ -9,8 +9,8 @@ import "../Cassette/ICassette.sol";
 contract Timelock is ICassette, ITimeMachine, Ownable {
   using SafeMath for uint;
 
-  event Lock(address indexed _for, uint value, uint timestamp);
-  event Withdraw(address indexed _for, uint value, uint timestamp);
+  event Lock(address indexed _for, uint indexed timestamp, uint value);
+  event Withdraw(address indexed _for, uint indexed timestamp, uint value);
 
 
 
@@ -28,7 +28,7 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
       require(acceptAbstractToken_(_value));
     } else revert();
     uint _balance = balance[_for][_timestamp];
-    emit Lock(_for, _value, _timestamp);
+    emit Lock(_for, _timestamp, _value);
     balance[_for][_timestamp] = _balance.add(_value);
     return true;
   }
@@ -51,7 +51,7 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
       require(_curTimestamp <= _now);
       balance[_for][_curTimestamp] = _curValue.sub(_subValue);
       _totalValue = _totalValue.add(_subValue);
-      emit Withdraw(_for, _subValue, _curTimestamp);
+      emit Withdraw(_for, _curTimestamp, _subValue);
     }
     releaseAbstractToken_(_for, _totalValue);
     return true;
