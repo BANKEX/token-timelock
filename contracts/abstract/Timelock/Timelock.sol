@@ -44,9 +44,9 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
     uint _subValue;
     uint _now = getTimestamp_();
     for (uint i = 0; i < _len; i++){
-      _curValue = balance[_for][_timestamp[i]];
-      _subValue = _value[i];
       _curTimestamp = _timestamp[i];
+      _curValue = balance[_for][_curTimestamp];
+      _subValue = _value[i];
       require(_curValue >= _subValue);
       require(_curTimestamp <= _now);
       balance[_for][_curTimestamp] = _curValue.sub(_subValue);
