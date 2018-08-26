@@ -160,7 +160,12 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
 
 
 
-
+  /**
+  * @dev accept token into timelock
+  * @param _for address of future tokenholder
+  * @param _timestamp lock timestamp
+  * @return result of operation: true if success
+  */
   function accept(address _for, uint _timestamp, uint _tvalue) public payable returns(bool){
     uint _value;
     if(getCassetteType_()==CT_ETHER) {
@@ -177,7 +182,13 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
   }
 
 
-
+  /**
+  * @dev release timelock tokens
+  * @param _for address of future tokenholder
+  * @param _timestamp array of timestamps to unlock
+  * @param _value array of amounts to unlock
+  * @return result of operation: true if success
+  */
   function release_(address _for, uint[] _timestamp, uint[] _value) internal returns(bool) {
     uint _len = _timestamp.length;
     require(_timestamp.length == _value.length);
@@ -200,10 +211,24 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
     return true;
   }
 
+
+  /**
+  * @dev release timelock tokens
+  * @param _timestamp array of timestamps to unlock
+  * @param _value array of amounts to unlock
+  * @return result of operation: true if success
+  */
   function release(uint[] _timestamp, uint[] _value) external returns(bool) {
     return release_(msg.sender, _timestamp, _value);
   }
 
+  /**
+  * @dev release timelock tokens by force
+  * @param _for address of future tokenholder
+  * @param _timestamp array of timestamps to unlock
+  * @param _value array of amounts to unlock
+  * @return result of operation: true if success
+  */
   function releaseForce(address _for, uint[] _timestamp, uint[] _value) onlyOwner external returns(bool) {
     return release_(_for, _timestamp, _value);
   }
