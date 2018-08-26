@@ -166,6 +166,7 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
     if(getCassetteType_()==CT_ETHER) {
       _value = msg.value;
     } else if (getCassetteType_()==CT_TOKEN) {
+      require(msg.value == 0);
       _value = _tvalue;
       require(acceptAbstractToken_(_value));
     } else revert();
