@@ -151,7 +151,7 @@ contract Ownable {
 contract Timelock is ICassette, ITimeMachine, Ownable {
   using SafeMath for uint;
 
-  event Lock(address indexed _for, uint indexed timestamp, uint value);
+  event Lock(address indexed _from, address indexed _for, uint indexed timestamp, uint value);
   event Withdraw(address indexed _for, uint indexed timestamp, uint value);
 
 
@@ -176,7 +176,7 @@ contract Timelock is ICassette, ITimeMachine, Ownable {
       require(acceptAbstractToken_(_value));
     } else revert();
     uint _balance = balance[_for][_timestamp];
-    emit Lock(_for, _timestamp, _value);
+    emit Lock(msg.sender, _for, _timestamp, _value);
     balance[_for][_timestamp] = _balance.add(_value);
     return true;
   }
