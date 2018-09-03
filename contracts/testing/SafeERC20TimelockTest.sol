@@ -6,7 +6,6 @@ import "../abstract/Timelock/SafeERC20Timelock.sol";
 
 
 contract SafeERC20TimelockTest is TimeMachineT, SafeERC20Timelock {
-    constructor (address _token) public SafeERC20Timelock(_token) {
-        
-    }
+  constructor (address _token) public SafeERC20Timelock(_token) {
+  }
 }

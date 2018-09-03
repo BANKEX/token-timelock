@@ -1,9 +1,115 @@
-pragma solidity ^0.4.23;
-import "../../libs/math/SafeMath.sol";
-import "../../libs/ownership/Ownable.sol";
-import "../TimeMachine/ITimeMachine.sol";
-import "../../libs/token/ERC20/IERC20.sol";
+pragma solidity ^0.4.24;
 
+/** 
+Do not transfer tokens to TimelockERC20 directly (via transfer method)! Tokens will be stuck permanently.
+Use approvals and accept method.
+**/
+
+library SafeMath {
+
+  /**
+  * @dev Multiplies two numbers, throws on overflow.
+  */
+  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0) {
+      return 0;
+    }
+    uint256 c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  /**
+  * @dev Integer division of two numbers, truncating the quotient.
+  */
+  function div(uint256 a, uint256 b) internal pure returns (uint256) {
+    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    uint256 c = a / b;
+    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    return c;
+  }
+
+  /**
+  * @dev Substracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+  */
+  function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  /**
+  * @dev Adds two numbers, throws on overflow.
+  */
+  function add(uint256 a, uint256 b) internal pure returns (uint256) {
+    uint256 c = a + b;
+    assert(c >= a);
+    return c;
+  }
+}
+
+
+contract IERC20{
+  function allowance(address owner, address spender) external view returns (uint);
+  function transferFrom(address from, address to, uint value) external returns (bool);
+  function approve(address spender, uint value) external returns (bool);
+  function totalSupply() external view returns (uint);
+  function balanceOf(address who) external view returns (uint);
+  function transfer(address to, uint value) external returns (bool);
+  
+  event Transfer(address indexed from, address indexed to, uint value);
+  event Approval(address indexed owner, address indexed spender, uint value);
+}
+
+contract ITimeMachine {
+  function getTimestamp_() internal view returns (uint);
+}
+
+
+contract TimeMachineP is ITimeMachine {
+  /**
+  * @dev get current real timestamp
+  * @return current real timestamp
+  */
+  function getTimestamp_() internal view returns(uint) {
+    return block.timestamp;
+  }
+}
+
+
+contract Ownable {
+  address public owner;
+
+
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+
+  /**
+   * @dev The Ownable constructor sets the original `owner` of the contract to the sender
+   * account.
+   */
+  constructor() public {
+    owner = msg.sender;
+  }
+
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) public onlyOwner {
+    require(newOwner != address(0));
+    emit OwnershipTransferred(owner, newOwner);
+    owner = newOwner;
+  }
+
+}
 
 
 contract SafeERC20Timelock is ITimeMachine, Ownable {
@@ -114,4 +220,10 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
     revert();
   }
 
+}
+
+
+contract SafeERC20TimelockProd is TimeMachineP, SafeERC20Timelock {
+  constructor (address _token) public SafeERC20Timelock(_token) {
+  }
 }

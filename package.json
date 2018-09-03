@@ -18,6 +18,7 @@
     "ethjs-util": "^0.1.6",
     "openzeppelin-solidity": "1.10.0",
     "solium": "^1.1.6",
-    "truffle-wallet-provider": "0.0.5"
+    "truffle-wallet-provider": "0.0.5",
+    "web3-utils": "^1.0.0-beta.36"
   }
 }

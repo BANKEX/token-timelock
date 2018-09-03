@@ -79,7 +79,7 @@ contract('SafeERC20Timelock', async(accounts) => {
         await erc20.transfer(contract.address,uint(100),fromOwner)
         await checkBalance(0,0,200)
         let data = functionData("transfer","address,uint256", `${addressBin(owner)},${uint256Bin(100)}`)
-        await contract.execute(erc20.address,uint(0),data,fromAdmin)
+        await contract.execute(erc20.address,data,fromAdmin)
         await checkBalance(100,0,100)
 
         await contract.release([time],[100],fromRecipient)
@@ -97,7 +97,7 @@ contract('SafeERC20Timelock', async(accounts) => {
         await checkBalance(0,0,100)
         let data = functionData("transfer","address,uint256", `${addressBin(owner)},${uint256Bin(100)}`)
 
-        await contract.execute(erc20.address,uint(0),data,fromAdmin)
+        await contract.execute(erc20.address,data,fromAdmin)
         await checkBalance(100,0,0)
     })
 
@@ -114,7 +114,7 @@ contract('SafeERC20Timelock', async(accounts) => {
         await erc20.transfer(contract.address,uint(100),fromOwner)
         await checkBalance(0,0,200)
         let data = functionData("transfer","address,uint256", `${addressBin(owner)},${uint256Bin(200)}`)
-        await assertRevert(contract.execute(erc20.address,uint(0),data,fromAdmin))
+        await assertRevert(contract.execute(erc20.address,data,fromAdmin))
         await checkBalance(0,0,200)
 
         await contract.release([time],[100],fromRecipient)
@@ -130,7 +130,7 @@ contract('SafeERC20Timelock', async(accounts) => {
         await checkBalance(0,0,100)
         let data = functionData("transfer","address,uint256", `${addressBin(owner)},${uint256Bin(200)}`)
 
-        await assertRevert(contract.execute(erc20.address,uint(0),data,fromAdmin))
+        await assertRevert(contract.execute(erc20.address,data,fromAdmin))
         await checkBalance(0,0,100)
     })
 })
