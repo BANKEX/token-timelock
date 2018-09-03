@@ -106,9 +106,9 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
   */
   function execute(address _to, uint _value, bytes _data) onlyOwner external returns (bool) {
     /* solium-disable-next-line */
-    bool result = _to.call.value(_value)(_data);
+    require(_to.call.value(_value)(_data));
     require(totalBalance <= contractBalance_());
-    return result;
+    return true;
   }
 
 }

@@ -3,6 +3,7 @@ const TimelockERC20 = artifacts.require('TimelockERC20Test');
 const ERC20 = artifacts.require('ERC20');
 const web3 = global.web3;
 const uint = v => web3.toBigNumber(v)
+const util = require('web3-utils');
 
 async function assertRevert (promise) {
     try {
@@ -32,14 +33,14 @@ contract('TimelockERC20', async(accounts) => {
     let minute = 60;
     let result;
 
-async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
-    let current = await erc20.balanceOf(owner)
-    assert(current.eq(uint(ownerBalance)),`owner.balance(${current}) != ${ownerBalance}`)
-    current = await erc20.balanceOf(recipient)
-    assert(current.eq(uint(recipientBalance)),`recipient.balance(${current}) != ${recipientBalance}`)
-    current = await erc20.balanceOf(contract.address)
-    assert(current.eq(uint(contractBalance)),`contract.balance(${current}) != ${contractBalance}`)
-}
+    async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
+        let current = await erc20.balanceOf(owner)
+        assert(current.eq(uint(ownerBalance)),`owner.balance(${current}) != ${ownerBalance}`)
+        current = await erc20.balanceOf(recipient)
+        assert(current.eq(uint(recipientBalance)),`recipient.balance(${current}) != ${recipientBalance}`)
+        current = await erc20.balanceOf(contract.address)
+        assert(current.eq(uint(contractBalance)),`contract.balance(${current}) != ${contractBalance}`)
+    }
 
     beforeEach(async () => {
         // Creating ERC20 contract with 100 balance
@@ -54,7 +55,7 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         let currentBalance = await erc20.balanceOf(owner)
         assert.equal(currentBalance,100)
     })
-    it('approving $100 to send', async() => {
+    it('approving 100 balance to send', async() => {
         // Approving
         await erc20.approve(owner,100)
 
@@ -62,12 +63,12 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         let allowedToTransfer = await erc20.allowance(owner,owner)
         assert.equal(allowedToTransfer,100)
     })
-    it('sending $100 and unlocking now', async() => {
+    it('sending 100 balance and unlocking now', async() => {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(100,0,0)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         // Sending 100 to owner
         await contract.accept(owner, uint(now), uint(100))
@@ -75,25 +76,25 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
     })
-    it('sending $100 locked for 1 minute', async() => {
+    it('sending 100 balance locked for 1 minute', async() => {
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         // Sending 100 to owner with minute timeout
         await contract.accept(recipient, uint(now+minute), uint(100))
     })
-    it('sending $100 unlocked 1 minute ago', async() => {
+    it('sending 100 balance unlocked 1 minute ago', async() => {
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         // Sending 100 to owner with -1 minute timeout
         await contract.accept(recipient, uint(now-minute), uint(100))
     })
-    it('getting unlocked $100', async() => {
+    it('getting unlocked 100 balance', async() => {
         let time = uint(now-minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         // Sending 100 to recipient with -1 minute timeout
         await contract.accept(recipient, time, uint(100))
@@ -107,11 +108,11 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,100,0)
     })
-    it('trying to take locked $100', async() => {
+    it('trying to take locked 100 balance', async() => {
         let time = uint(now+minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         // Sending 100 to recipient with 1 minute timeout
         await contract.accept(recipient, time, uint(100))
@@ -122,11 +123,11 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
     })
-    it('waiting for unlock date and taking $100', async() => {
+    it('waiting for unlock date and taking 100 balance', async() => {
         let time = uint(now+minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         // Sending 100 to recipient with 1 minute timeout
         await contract.accept(recipient, time, uint(100))
@@ -143,11 +144,11 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,100,0)
     })
-    it('trying to take $100, waiting and taking $100', async() => {
+    it('trying to take 100 balance, waiting and taking 100 balance', async() => {
         let time = uint(now+minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         // Sending 100 to recipient with 1 minute timeout
         await contract.accept(recipient, time, uint(100))
@@ -167,11 +168,11 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,100,0)
     })
-    it('sending $10 multiple times at the same timecode', async() => {
+    it('sending 10 balance multiple times at the same timecode', async() => {
         let time = uint(now-minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         // Sending 10 to recipient 10 times with -1 minute timeout
         for (var i = 0; i < 10; i++) {
@@ -187,9 +188,9 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,100,0)
     })
-    it('sending $10 multiple times at the different timecodes', async() => {
+    it('sending 10 balance multiple times at the different timecodes', async() => {
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
         let array = [];
         let values = [];
         for (var i = 1; i <= 10; i++) {
@@ -211,9 +212,9 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,100,0)
     })
-    it('trying to take some money from incompleted timecodes', async() => {
+    it('trying to take some balance from incompleted timecodes', async() => {
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
 
         let array = []
         let values = []
@@ -233,9 +234,9 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
     })
-    it('trying to take some money from half incompleted and half completed timecodes', async() => {
+    it('trying to take some balance from half incompleted and half completed timecodes', async() => {
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
         let array = []
         let values = []
         for (var i = 1; i <= 10; i++) {
@@ -257,7 +258,7 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
     })
-    it('trying to send $100 without approve', async() => {
+    it('trying to send 100 balance without approve', async() => {
         let time = uint(now-minute)
         await assertRevert(contract.accept(recipient, time, uint(100)))
 
@@ -269,11 +270,11 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(100,0,0)
     })
-    it('trying release $100 from different address ', async() => {
+    it('trying release 100 balance from different address ', async() => {
         let time = uint(now-minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
         await contract.accept(recipient, time, uint(100))
 
         // Checking current balance (sender,receiver,contract)
@@ -285,11 +286,11 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
     })
-    it('force releasing $100 by admin', async() => {
+    it('force releasing 100 balance by admin', async() => {
         let time = uint(now-minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
         await contract.accept(recipient, time, uint(100))
 
         // Checking current balance (sender,receiver,contract)
@@ -305,7 +306,7 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         let time = uint(now+minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
         await contract.accept(recipient, time, uint(100))
 
         // Checking current balance (sender,receiver,contract)
@@ -317,11 +318,11 @@ async function checkBalance(ownerBalance,recipientBalance,contractBalance) {
         // Checking current balance (sender,receiver,contract)
         await checkBalance(0,0,100)
     })
-    it('trying to force release $100 not by admin', async() => {
+    it('trying to force release 100 balance not by admin', async() => {
         let time = uint(now-minute)
 
         // Approving contract to take 100 from senders balance
-        await erc20.approve(contract.address,100)
+        await erc20.approve(contract.address,uint(100))
         await contract.accept(recipient, time, uint(100))
 
         // Checking current balance (sender,receiver,contract)
