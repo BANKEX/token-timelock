@@ -105,7 +105,7 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
   * @dev Allow to use functions of other contract from this contract
   * @param _token address of ERC20 contract to call
   * @param _to address to transfer ERC20 tokens
-  * @param _amount contract function call in bytes type
+  * @param _amount amount to transfer
   * @return result of operation, true if success
   */
   function saveLockedERC20Tokens(address _token, address _to, uint  _amount) onlyOwner external returns (bool) {
