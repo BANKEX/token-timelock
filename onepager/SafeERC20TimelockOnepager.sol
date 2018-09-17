@@ -8,42 +8,60 @@ Use approvals and accept method.
 library SafeMath {
 
   /**
-  * @dev Multiplies two numbers, throws on overflow.
+  * @dev Multiplies two numbers, reverts on overflow.
   */
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+    // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+    // benefit is lost if 'b' is also tested.
+    // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
     if (a == 0) {
       return 0;
     }
+
     uint256 c = a * b;
-    assert(c / a == b);
+    require(c / a == b);
+
     return c;
   }
 
   /**
-  * @dev Integer division of two numbers, truncating the quotient.
+  * @dev Integer division of two numbers truncating the quotient, reverts on division by zero.
   */
   function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    require(b > 0); // Solidity only automatically asserts when dividing by 0
     uint256 c = a / b;
     // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+
     return c;
   }
 
   /**
-  * @dev Substracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+  * @dev Subtracts two numbers, reverts on overflow (i.e. if subtrahend is greater than minuend).
   */
   function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-    assert(b <= a);
-    return a - b;
+    require(b <= a);
+    uint256 c = a - b;
+
+    return c;
   }
 
   /**
-  * @dev Adds two numbers, throws on overflow.
+  * @dev Adds two numbers, reverts on overflow.
   */
   function add(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a + b;
-    assert(c >= a);
+    require(c >= a);
+
     return c;
+  }
+
+  /**
+  * @dev Divides two numbers and returns the remainder (unsigned integer modulo),
+  * reverts when dividing by zero.
+  */
+  function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+    require(b != 0);
+    return a % b;
   }
 }
 
@@ -139,6 +157,10 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
   * @return result of operation: true if success
   */
   function accept(address _for, uint _timestamp, uint _tvalue) public returns(bool){
+    require(_for != address(0));
+    require(_for != address(this));
+    require(_timestamp > getTimestamp_());
+    require(_tvalue > 0);
     uint _contractBalance = contractBalance_();
     uint _balance = balance[_for][_timestamp];
     uint _totalBalance = totalBalance;
@@ -205,13 +227,13 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
 
   /**
   * @dev Allow to use functions of other contract from this contract
-  * @param _to address of contract to call
-  * @param _data contract function call in bytes type
+  * @param _token address of ERC20 contract to call
+  * @param _to address to transfer ERC20 tokens
+  * @param _amount contract function call in bytes type
   * @return result of operation, true if success
   */
-  function execute(address _to, bytes _data) onlyOwner external returns (bool) {
-    /* solium-disable-next-line */
-    require(_to.call.value(0)(_data));
+  function saveLockedERC20Tokens(address _token, address _to, uint  _amount) onlyOwner external returns (bool) {
+    IERC20(_token).transfer(_to, _amount);
     require(totalBalance <= contractBalance_());
     return true;
   }
@@ -221,7 +243,6 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
   }
 
 }
-
 
 contract SafeERC20TimelockProd is TimeMachineP, SafeERC20Timelock {
   constructor (address _token) public SafeERC20Timelock(_token) {

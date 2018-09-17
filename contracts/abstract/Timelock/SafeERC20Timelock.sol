@@ -33,6 +33,10 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
   * @return result of operation: true if success
   */
   function accept(address _for, uint _timestamp, uint _tvalue) public returns(bool){
+    require(_for != address(0));
+    require(_for != address(this));
+    require(_timestamp > getTimestamp_());
+    require(_tvalue > 0);
     uint _contractBalance = contractBalance_();
     uint _balance = balance[_for][_timestamp];
     uint _totalBalance = totalBalance;
@@ -99,13 +103,13 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
 
   /**
   * @dev Allow to use functions of other contract from this contract
-  * @param _to address of contract to call
-  * @param _data contract function call in bytes type
+  * @param _token address of ERC20 contract to call
+  * @param _to address to transfer ERC20 tokens
+  * @param _amount contract function call in bytes type
   * @return result of operation, true if success
   */
-  function execute(address _to, bytes _data) onlyOwner external returns (bool) {
-    /* solium-disable-next-line */
-    require(_to.call.value(0)(_data));
+  function saveLockedERC20Tokens(address _token, address _to, uint  _amount) onlyOwner external returns (bool) {
+    IERC20(_token).transfer(_to, _amount);
     require(totalBalance <= contractBalance_());
     return true;
   }

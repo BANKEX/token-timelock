@@ -39,8 +39,7 @@ contract('SafeERC20Timelock', async(accounts) => {
 
     let erc20;
     let contract;
-    let now = uint(Math.floor(Date.now()/1000))
-    let delta = uint(75785)
+    let time = uint(75785)
     const admin = accounts[0];
     const owner = accounts[1];
     const recipient = accounts[2];
@@ -69,7 +68,6 @@ contract('SafeERC20Timelock', async(accounts) => {
         assert(cbContract.eq(uint(contractBalance)),`contract.balance(${cbContract}) != ${contractBalance} ${balances}`)
     }
     it('getting balance back', async() => {
-        let time = now.add(delta)
         erc20 = await ERC20.new(uint(200),fromOwner)
         contract = await SafeERC20TimelockTest.new(erc20.address,fromAdmin)
 
@@ -80,10 +78,11 @@ contract('SafeERC20Timelock', async(accounts) => {
         // sending random balance
         await erc20.transfer(contract.address,uint(100),fromOwner)
         await checkBalance(0,0,200)
-        await contract.saveLockedERC20Tokens(erc20.address,owner, uint(100),fromAdmin)
+        let data = functionData("transfer","address,uint256", `${addressBin(owner)},${uint256Bin(100)}`)
+        await contract.execute(erc20.address,data,fromAdmin)
         await checkBalance(100,0,100)
-        await contract.incTimestamp(delta.mul(uint(2)))
-        await contract.release([time],[uint(100)],fromRecipient)
+
+        await contract.release([time],[100],fromRecipient)
         await checkBalance(100,100,0)
     })
 
@@ -96,12 +95,11 @@ contract('SafeERC20Timelock', async(accounts) => {
         await checkBalance(100,0,0)
         await erc20.transfer(contract.address,uint(100),fromOwner)
         await checkBalance(0,0,100)
-        await contract.saveLockedERC20Tokens(erc20.address,owner, uint(100),fromAdmin)
+        await contract.safeLockedERC20Tokens(erc20.address,owner, uint(100),fromAdmin)
         await checkBalance(100,0,0)
     })
 
     it('trying to get more balance than sended', async() => {
-        let time = now.add(delta)
         erc20 = await ERC20.new(uint(200),fromOwner)
         contract = await SafeERC20TimelockTest.new(erc20.address,fromAdmin)
 
@@ -109,16 +107,15 @@ contract('SafeERC20Timelock', async(accounts) => {
         await erc20.approve(contract.address,uint(100), fromOwner)
         await contract.accept(recipient, time, uint(100), fromOwner)
         await checkBalance(100,0,100)
-        await contract.incTimestamp(delta.mul(uint(2)))
 
-        
         // sending random balance
         await erc20.transfer(contract.address,uint(100),fromOwner)
         await checkBalance(0,0,200)
-        await assertRevert(contract.saveLockedERC20Tokens(erc20.address,owner, uint(200),fromAdmin))
+        let data = functionData("transfer","address,uint256", `${addressBin(owner)},${uint256Bin(200)}`)
+        await assertRevert(contract.safeLockedERC20Tokens(erc20.address,owner, uint(200),fromAdmin))
         await checkBalance(0,0,200)
 
-        await contract.release([time],[uint(100)],fromRecipient)
+        await contract.release([time],[100],fromRecipient)
         await checkBalance(0,100,100)
     })
 
@@ -129,7 +126,9 @@ contract('SafeERC20Timelock', async(accounts) => {
         await checkBalance(100,0,0)
         await erc20.transfer(contract.address,uint(100),fromOwner)
         await checkBalance(0,0,100)
-        await assertRevert(contract.saveLockedERC20Tokens(erc20.address,owner, uint(200),fromAdmin))
+        let data = functionData("transfer","address,uint256", `${addressBin(owner)},${uint256Bin(200)}`)
+
+        await assertRevert(contract.execute(erc20.address,data,fromAdmin))
         await checkBalance(0,0,100)
     })
 })
