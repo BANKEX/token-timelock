@@ -40,7 +40,7 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
     uint _contractBalance = contractBalance_();
     uint _balance = balance[_for][_timestamp];
     uint _totalBalance = totalBalance;
-    token.transferFrom(msg.sender, this, _tvalue);
+    require(token.transferFrom(msg.sender, this, _tvalue));
     uint _value = contractBalance_().sub(_contractBalance);
     balance[_for][_timestamp] = _balance.add(_value);
     totalBalance = _totalBalance.add(_value);
@@ -75,7 +75,7 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
       emit Withdraw(_for, _curTimestamp, _subValue);
     }
     totalBalance = totalBalance.sub(_totalValue);
-    token.transfer(_for, _totalValue);
+    require(token.transfer(_for, _totalValue));
     return true;
   }
 
@@ -109,7 +109,7 @@ contract SafeERC20Timelock is ITimeMachine, Ownable {
   * @return result of operation, true if success
   */
   function saveLockedERC20Tokens(address _token, address _to, uint  _amount) onlyOwner external returns (bool) {
-    IERC20(_token).transfer(_to, _amount);
+    require(IERC20(_token).transfer(_to, _amount));
     require(totalBalance <= contractBalance_());
     return true;
   }
